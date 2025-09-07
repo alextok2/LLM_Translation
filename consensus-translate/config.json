@@ -1,0 +1,9 @@
+{
+  "model": "D:\\Faraday models\\Veiled-Calla-12B-Q6_K.gguf",
+  "usecublas": "normal",
+  "apiserver": true,
+  "host": "127.0.0.1",
+  "port": 5001,
+  "contextsize": 4096,
+  "usemirostat": "2,5.0,0.1"
+}
