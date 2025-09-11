@@ -1,0 +1,59 @@
+
+<!doctype html>
+<html lang="ru" class="h-full bg-gray-50">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <script>
+    document.body.addEventListener('htmx:configRequest', (e) => {
+      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      e.detail.headers['X-CSRFToken'] = token;
+    });
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}StoryTranslate Hub{% endblock %}</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script>
+    function getCookie(name) {
+        const v = (`; ${document.cookie}`).split(`; ${name}=`); 
+        if (v.length === 2) return v.pop().split(";").shift();
+    }
+    document.addEventListener("htmx:configRequest", function (e) {
+        const token = getCookie("csrftoken");
+        if (token) {
+            e.detail.headers["X-CSRFToken"] = token;
+        }
+    });
+</script>
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  {% csrf_token %}
+
+</head>
+<body class="min-h-full">
+  <nav class="bg-white border-b">
+    <div class="max-w-6xl mx-auto p-4 flex gap-4">
+      <a href="/" class="font-semibold">Каталог</a>
+      <a href="/translator/dashboard/" class="">Кабинет переводчика</a>
+      <a href="/account/">Личный кабинет</a>
+      <a href="/admin/" class="">Админка</a>
+    </div>
+    <div class="ml-auto flex gap-3">
+      {% if request.user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button class="text-sm text-blue-700 underline">Выйти</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}" class="text-sm text-blue-700 underline">Войти</a>
+        <a href="{% url 'signup' %}" class="text-sm text-blue-700 underline">Регистрация</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-4">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
+

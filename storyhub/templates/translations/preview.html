@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Превью: {{ story.title }}{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 mb-6">
+    <div class="w-full md:w-1/3">
+        {% if story.poster_url %}
+            <img src="{{ story.poster_url }}" class="w-full rounded shadow border" alt="poster">
+        {% else %}
+            <div class="w-full h-48 bg-gray-100 rounded flex items-center justify-center text-gray-400">Нет постера</div>
+        {% endif %}
+    </div>
+    <div class="flex-1">
+        <h1 class="text-2xl font-bold mb-2">{{ story.title }}</h1>
+        <div class="text-sm text-gray-600 mb-2">
+            {{ story.original_language.name }} → {{ story.target_language.name }} · Статус: {{ story.status }}
+        </div>
+        <p class="mb-3 whitespace-pre-line">{{ story.description }}</p>
+        <div class="mb-4">
+            {% for t in story.tags.all %}
+                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded mr-1">{{ t.name }}</span>
+            {% empty %}
+                <span class="text-xs text-gray-400">Без тегов</span>
+            {% endfor %}
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'translator_dashboard' %}" class="px-3 py-1 bg-gray-100 rounded">Назад</a>
+            <form hx-post="/api/stories/{{ story.id }}/claim/" hx-swap="none">
+                {% csrf_token %}
+                <button class="bg-green-600 text-white px-4 py-2 rounded">Забрать в работу</button>
+            </form>
+            {% if story.assigned_to_id %}
+                <span class="text-xs text-gray-500">Уже назначено</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h2 class="text-lg font-semibold mb-3">Оригинал и машинный перевод (предпросмотр)</h2>
+<div id="preview-paragraphs" class="space-y-4">
+    {% for p in paragraphs %}
+        <div class="bg-white border rounded p-4">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <div class="text-sm font-semibold mb-1">Оригинал #{{ p.index }}</div>
+                    <pre class="whitespace-pre-wrap text-sm">{{ p.original_text }}</pre>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold mb-1">Машинный перевод</div>
+                    <pre class="whitespace-pre-wrap text-sm">{{ p.machine_text }}</pre>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if not show_all and story.paragraphs.count > paragraphs|length %}
+<div class="mt-4">
+    <a
+        hx-get="{% url 'translator_story_preview' story.slug %}?show=all"
+        hx-target="#preview-paragraphs"
+        hx-swap="outerHTML"
+        class="text-blue-700 underline"
+    >Показать все абзацы</a>
+</div>
+{% endif %}
+{% endblock %}

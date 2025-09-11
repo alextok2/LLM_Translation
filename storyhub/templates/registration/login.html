@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Вход</h1>
+<form method="post" class="space-y-4 max-w-sm">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div>
+    <label class="block mb-1" for="{{ form.username.id_for_label }}">Логин</label>
+    {{ form.username }}
+    {{ form.username.errors }}
+  </div>
+  <div>
+    <label class="block mb-1" for="{{ form.password.id_for_label }}">Пароль</label>
+    {{ form.password }}
+    {{ form.password.errors }}
+  </div>
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  <button class="bg-blue-600 text-white px-3 py-1 rounded">Войти</button>
+</form>
+<p class="mt-3 text-sm">
+  Нет аккаунта? <a class="text-blue-700 underline" href="{% url 'signup' %}">Регистрация</a>
+  · <a class="text-blue-700 underline" href="{% url 'password_reset' %}">Забыли пароль?</a>
+</p>
+{% endblock %}

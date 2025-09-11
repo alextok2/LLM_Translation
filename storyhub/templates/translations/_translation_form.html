@@ -1,0 +1,16 @@
+<form
+  hx-patch="/api/paragraphs/{{ paragraph.id }}/translation/"
+  hx-target="#para-{{ paragraph.id }}"
+  hx-swap="outerHTML"
+  class="space-y-2"
+>
+  {% csrf_token %}
+  <textarea name="text" class="w-full border rounded p-2" rows="6">{{ text }}</textarea>
+  <div class="flex items-center gap-3">
+    <label class="flex items-center gap-2">
+      <input type="checkbox" name="is_finalized" value="true" {% if is_finalized %}checked{% endif %}>
+      Финализировано
+    </label>
+    <button class="bg-blue-600 text-white px-3 py-1 rounded">Сохранить</button>
+  </div>
+</form>

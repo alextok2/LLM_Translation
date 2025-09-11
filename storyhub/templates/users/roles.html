@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Роли{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Роли</h1>
+<p class="mb-4">Текущие роли:
+  {% for g in request.user.groups.all %}
+    <span class="text-xs bg-gray-100 px-2 py-0.5 rounded mr-1">{{ g.name }}</span>
+  {% empty %}
+    <span class="text-xs text-gray-400">Нет ролей</span>
+  {% endfor %}
+</p>
+<div class="flex gap-3">
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="become_reader">
+    <button class="px-3 py-1 bg-gray-100 rounded">Стать читателем</button>
+  </form>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="become_translator">
+    <button class="px-3 py-1 bg-blue-600 text-white rounded">Стать переводчиком</button>
+  </form>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="become_admin">
+    <button class="px-3 py-1 bg-purple-600 text-white rounded">Сделать админом</button>
+  </form>
+</div>
+<p class="mt-6">
+  Дальше откройте <a class="text-blue-700 underline" href="{% url 'translator_dashboard' %}">кабинет переводчика</a>.
+</p>
+{% endblock %}

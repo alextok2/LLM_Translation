@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Каталог{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Истории</h1>
+<form method="get" class="mb-4 flex gap-2">
+  <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Поиск..." class="border px-2 py-1 rounded">
+  <input type="text" name="tags" value="{{ request.GET.tags }}" placeholder="Теги (slug, через запятую)" class="border px-2 py-1 rounded">
+  <button class="bg-blue-600 text-white px-3 py-1 rounded">Фильтр</button>
+</form>
+<ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {% for s in stories %}
+    <li class="p-4 bg-white shadow rounded">
+      <a href="{% url 'story_detail' s.slug %}" class="text-lg font-semibold hover:underline">{{ s.title }}</a>
+      <div class="text-sm text-gray-500">Абзацев: {{ s.paragraphs_count }} | Опубликовано: {{ s.published_at|default:"—" }}</div>
+      <div class="mt-2">
+        {% for t in s.tags.all %}
+          <span class="text-xs bg-gray-100 px-2 py-0.5 rounded mr-1">{{ t.name }}</span>
+        {% endfor %}
+      </div>
+    </li>
+  {% empty %}
+    <li>Ничего не найдено.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

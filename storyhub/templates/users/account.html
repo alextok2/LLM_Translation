@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Личный кабинет</h1>
+
+<div class="grid md:grid-cols-3 gap-6">
+    <section class="p-4 bg-white rounded shadow md:col-span-2">
+        <h2 class="font-semibold mb-3">Мои задачи</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="p-3 bg-gray-50 rounded">
+                <div class="text-xs text-gray-500">Доступные</div>
+                <div class="text-xl font-bold">{{ stats.available }}</div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded">
+                <div class="text-xs text-gray-500">В работе</div>
+                <div class="text-xl font-bold">{{ stats.in_progress }}</div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded">
+                <div class="text-xs text-gray-500">На ревью</div>
+                <div class="text-xl font-bold">{{ stats.review }}</div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded">
+                <div class="text-xs text-gray-500">Опубликовано</div>
+                <div class="text-xl font-bold">{{ stats.published }}</div>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+            <div>
+                <h3 class="font-medium mb-2">Доступные</h3>
+                <ul class="space-y-2">
+                    {% for s in available_list %}
+                        <li class="text-sm">
+                            <a class="text-blue-700 underline" href="{% if s.slug %}/translator/story/{{ s.slug }}/{% else %}/translator/story/id/{{ s.id }}/{% endif %}">{{ s.title }}</a>
+                        </li>
+                    {% empty %}
+                        <li class="text-sm text-gray-500">Нет доступных.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-medium mb-2">В работе</h3>
+                <ul class="space-y-2">
+                    {% for s in in_progress_list %}
+                        <li class="text-sm">
+                            <a class="text-blue-700 underline" href="{% if s.slug %}/translator/editor/{{ s.slug }}/{% else %}/translator/editor/id/{{ s.id }}/{% endif %}">{{ s.title }}</a>
+                        </li>
+                    {% empty %}
+                        <li class="text-sm text-gray-500">Пусто.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-medium mb-2">На ревью</h3>
+                <ul class="space-y-2">
+                    {% for s in review_list %}
+                        <li class="text-sm">
+                            <a class="text-blue-700 underline" href="{% if s.slug %}/translator/editor/{{ s.slug }}/{% else %}/translator/editor/id/{{ s.id }}/{% endif %}">{{ s.title }}</a>
+                        </li>
+                    {% empty %}
+                        <li class="text-sm text-gray-500">Пусто.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="font-semibold mt-6 mb-2">Последние правки</h2>
+        <ul class="space-y-2">
+            {% for t in recent_translations %}
+                <li class="text-sm">
+                    {% with s=t.paragraph.story %}
+                        <span class="text-gray-600">{{ t.updated_at|date:"Y-m-d H:i" }}</span> —
+                        <a class="text-blue-700 underline" href="{% if s.slug %}/translator/editor/{{ s.slug }}/{% else %}/translator/editor/id/{{ s.id }}/{% endif %}">
+                            {{ s.title }} (абзац #{{ t.paragraph.index }})
+                        </a>
+                        {% if t.is_finalized %}<span class="ml-2 text-green-700">финализирован</span>{% endif %}
+                    {% endwith %}
+                </li>
+            {% empty %}
+                <li class="text-sm text-gray-500">Правок пока нет.</li>
+            {% endfor %}
+        </ul>
+
+        <h2 class="font-semibold mt-6 mb-2">Мои нерешённые пометки</h2>
+        <ul class="space-y-2">
+            {% for n in my_open_notes %}
+                <li class="text-sm">
+                    {% with s=n.paragraph.story %}
+                        <a class="text-blue-700 underline" href="{% if s.slug %}/translator/editor/{{ s.slug }}/{% else %}/translator/editor/id/{{ s.id }}/{% endif %}">
+                            {{ s.title }} (абзац #{{ n.paragraph.index }})
+                        </a> — {{ n.text|truncatechars:120 }}
+                    {% endwith %}
+                </li>
+            {% empty %}
+                <li class="text-sm text-gray-500">Нет открытых пометок.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <aside class="p-4 bg-white rounded shadow">
+        <h2 class="font-semibold mb-3">Профиль</h2>
+        <div class="text-sm mb-3">
+            <div><span class="text-gray-500">Логин:</span> {{ request.user.username }}</div>
+            <div><span class="text-gray-500">Email:</span> {{ request.user.email|default:"—" }}</div>
+            <div class="mt-2">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    <input name="email" type="email" placeholder="Новый email" class="border rounded px-2 py-1 w-full mb-2">
+                    <button class="px-3 py-1 bg-blue-600 text-white rounded w-full">Обновить</button>
+                </form>
+            </div>
+        </div>
+
+        <h2 class="font-semibold mb-3">Роли</h2>
+        <div class="mb-3">
+            {% for g in roles %}
+                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded mr-1">{{ g }}</span>
+            {% empty %}
+                <span class="text-xs text-gray-400">Нет ролей</span>
+            {% endfor %}
+        </div>
+        <div class="space-y-2">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="become_reader">
+                <button class="px-3 py-1 bg-gray-100 rounded w-full">Стать читателем</button>
+            </form>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="become_translator">
+                <button class="px-3 py-1 bg-blue-600 text-white rounded w-full">Стать переводчиком</button>
+            </form>
+            {% if request.user.is_superuser or request.user.is_staff %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="become_admin">
+                    <button class="px-3 py-1 bg-purple-600 text-white rounded w-full">Сделать админом</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <h2 class="font-semibold mt-6 mb-2">Ссылки</h2>
+        <ul class="text-sm space-y-1">
+            <li><a class="text-blue-700 underline" href="{% url 'translator_dashboard' %}">Кабинет переводчика</a></li>
+            <li><a class="text-blue-700 underline" href="/admin/">Админка</a></li>
+            <li><a class="text-blue-700 underline" href="{% url 'password_change' %}">Сменить пароль</a></li>
+        </ul>
+    </aside>
+</div>
+{% endblock %}

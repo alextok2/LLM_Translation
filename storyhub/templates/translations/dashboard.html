@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Кабинет переводчика{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Кабинет переводчика</h1>
+
+<nav class="flex gap-2 border-b mb-4">
+    <button
+        class="px-3 py-2 border-b-2 {% if initial_status == 'DRAFT' %}border-blue-600 text-blue-700{% else %}border-transparent{% endif %}"
+        hx-get="/translator/stories/?status=DRAFT"
+        hx-target="#tab-content"
+        hx-swap="innerHTML">
+        DRAFT {% if counts.DRAFT %}<span class="text-xs text-gray-500">({{ counts.DRAFT }})</span>{% endif %}
+    </button>
+    <button
+        class="px-3 py-2 border-b-2 {% if initial_status == 'IN_TRANSLATION' %}border-blue-600 text-blue-700{% else %}border-transparent{% endif %}"
+        hx-get="/translator/stories/?status=IN_TRANSLATION"
+        hx-target="#tab-content"
+        hx-swap="innerHTML">
+        IN_TRANSLATION {% if counts.IN_TRANSLATION %}<span class="text-xs text-gray-500">({{ counts.IN_TRANSLATION }})</span>{% endif %}
+    </button>
+    <button
+        class="px-3 py-2 border-b-2 {% if initial_status == 'REVIEW' %}border-blue-600 text-blue-700{% else %}border-transparent{% endif %}"
+        hx-get="/translator/stories/?status=REVIEW"
+        hx-target="#tab-content"
+        hx-swap="innerHTML">
+        REVIEW {% if counts.REVIEW %}<span class="text-xs text-gray-500">({{ counts.REVIEW }})</span>{% endif %}
+    </button>
+</nav>
+
+<div id="tab-content">
+    {% include "translations/_stories_list.html" with stories=stories_initial status=initial_status is_admin=is_admin is_translator=is_translator only %}
+</div>
+
+{% if not counts.DRAFT and not counts.IN_TRANSLATION and not counts.REVIEW %}
+    <p class="mt-6 text-gray-500">
+        Здесь пусто. Проверьте свои <a class="text-blue-700 underline" href="{% url 'role_settings' %}">роли</a>
+        или добавьте истории в /admin (и распарсьте абзацы).
+    </p>
+{% endif %}
+{% endblock %}

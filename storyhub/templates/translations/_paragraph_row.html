@@ -1,0 +1,30 @@
+<div id="para-{{ p.id }}" class="bg-white border rounded p-4">
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <h3 class="font-semibold mb-2">Оригинал #{{ p.index }}</h3>
+      <pre class="whitespace-pre-wrap">{{ p.original_text }}</pre>
+    </div>
+    <div>
+      <h3 class="font-semibold mb-2">Перевод</h3>
+      <form hx-get="/api/paragraphs/{{ p.id }}/translation/" hx-trigger="load" hx-target="#edit-{{ p.id }}" hx-swap="innerHTML"></form>
+      <div id="edit-{{ p.id }}">
+        <textarea class="w-full border rounded p-2" disabled>Загрузка...</textarea>
+      </div>
+    </div>
+  </div>
+  <div class="mt-3">
+    <h4 class="font-semibold">Иллюстрации</h4>
+    <div class="grid grid-cols-5 gap-2">
+      {% for ill in p.illustrations.all %}
+        <button
+          hx-post="/api/illustrations/{{ ill.id }}/select/"
+          hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+          hx-vals='{"is_selected": {{ ill.is_selected|yesno:"false,true" | safe }} }'
+          class="relative"
+        >
+          <img src="{{ ill.image_url }}" class="w-full h-24 object-cover rounded border {{ ill.is_selected|yesno:'ring-2 ring-blue-500,' }}">
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+</div>
