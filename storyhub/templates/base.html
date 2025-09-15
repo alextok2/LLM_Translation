@@ -26,7 +26,7 @@
     });
 </script>
 
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   {% csrf_token %}
 
 </head>
@@ -37,8 +37,7 @@
       <a href="/translator/dashboard/" class="">Кабинет переводчика</a>
       <a href="/account/">Личный кабинет</a>
       <a href="/admin/" class="">Админка</a>
-    </div>
-    <div class="ml-auto flex gap-3">
+      <div class="ml-auto flex gap-3">
       {% if request.user.is_authenticated %}
         <form method="post" action="{% url 'logout' %}" class="inline">
           {% csrf_token %}
@@ -49,6 +48,8 @@
         <a href="{% url 'signup' %}" class="text-sm text-blue-700 underline">Регистрация</a>
       {% endif %}
     </div>
+    </div>
+    
   </nav>
 
   <main class="max-w-6xl mx-auto p-4">

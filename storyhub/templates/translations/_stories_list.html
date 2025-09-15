@@ -59,9 +59,9 @@
                             {% endif %}
                             {% if is_admin %}
                                 <form hx-post="/api/stories/{{ s.id }}/publish/" hx-swap="none">
-                                    {% csrf_token %}
-                                    <button class="bg-purple-600 text-white px-3 py-1 rounded">Опубликовать</button>
-                                </form>
+                                {% csrf_token %}
+                                <button class="bg-purple-600 text-white px-3 py-1 rounded">Опубликовать</button>
+                            </form>
                             {% endif %}
                         {% endif %}
                     </div>

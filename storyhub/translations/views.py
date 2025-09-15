@@ -2,12 +2,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.renderers import TemplateHTMLRenderer
+
 from users.permissions import IsTranslatorGroup, IsAdminGroup
 from .models import Translation, ParagraphNote
 from stories.models import Paragraph, Illustration
 from .serializers import TranslationSerializer, ParagraphNoteSerializer
-from django.template.loader import render_to_string
 
+from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 def _to_bool(v):
     if isinstance(v, bool):
@@ -16,32 +20,44 @@ def _to_bool(v):
 
 
 class ParagraphTranslationView(APIView):
-    def get(self, request, paragraph_id: int):
-        p = Paragraph.objects.select_related("story").get(pk=paragraph_id)
-        user = request.user
-        if not user.is_authenticated:
-            return Response(status=401)
-        if not (IsAdminGroup().has_permission(request, self) or (IsTranslatorGroup().has_permission(request, self) and p.story.assigned_to_id == user.id)):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request, pk):
+        paragraph = get_object_or_404(Paragraph.objects.select_related('story'), pk=pk)
+
+        # Права (пример): только назначенный переводчик или админ
+        story = paragraph.story
+        if not (request.user.is_superuser or story.assigned_to_id == request.user.id):
             return Response(status=403)
-        tr = Translation.objects.filter(paragraph=p, translator=user).first()
-        if tr:
-            data = TranslationSerializer(tr).data
-        else:
-            # подсказка: если нет перевода, подставить machine_text
-            data = {"id": None, "paragraph": p.id, "text": p.machine_text, "is_finalized": False, "updated_at": None}
-        context = {
-            "paragraph": p,
-            "text": tr.text if tr else p.machine_text,
-            "is_finalized": tr.is_finalized if tr else False
-        }
-        html = render_to_string("translations/_translation_form.html", context, request=request)
-        return Response(html)
+
+        t = Translation.objects.filter(paragraph=paragraph, translator=request.user).first()
+        text = t.text if t and t.text else (paragraph.machine_text or "")
+        is_finalized = bool(t and t.is_finalized)
+        return Response(
+            {"paragraph": paragraph, "text": text, "is_finalized": is_finalized},
+            template_name="translations/_translation_form.html"
+        )
 
     def put(self, request, paragraph_id: int):
         return self._upsert(request, paragraph_id, full=True)
 
-    def patch(self, request, paragraph_id: int):
-        return self._upsert(request, paragraph_id, full=False)
+    @transaction.atomic
+    def patch(self, request, pk):
+        paragraph = get_object_or_404(Paragraph.objects.select_related('story'), pk=pk)
+        story = paragraph.story
+        if not (request.user.is_superuser or story.assigned_to_id == request.user.id):
+            return Response(status=403)
+
+        text = (request.data.get("text") or "").strip()
+        is_finalized = request.data.get("is_finalized") == "true"
+
+        t, _ = Translation.objects.get_or_create(paragraph=paragraph, translator=request.user)
+        t.text = text
+        t.is_finalized = is_finalized
+        t.save()
+
+        # Вернём целую карточку абзаца
+        return Response({"p": paragraph}, template_name="translations/_paragraph_row.html")
 
 
     def _upsert(self, request, paragraph_id: int, full: bool):

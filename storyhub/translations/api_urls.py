@@ -5,7 +5,8 @@ from .views_me import CompletedStoriesView, AvailableStoriesView
 
 urlpatterns = [
     # Перевод абзаца (GET – HTML partial для HTMX; PUT/PATCH – сохранение)
-    path("paragraphs/<int:paragraph_id>/translation/", ParagraphTranslationView.as_view(), name="paragraph_translation"),
+    
+    path("paragraphs/<int:pk>/translation/", ParagraphTranslationView.as_view(), name="paragraph-translation"),
 
     # Заметки
     path("notes/", NoteCreateView.as_view(), name="notes_create"),

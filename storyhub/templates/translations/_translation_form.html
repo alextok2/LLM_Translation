@@ -1,5 +1,6 @@
 <form
   hx-patch="/api/paragraphs/{{ paragraph.id }}/translation/"
+  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
   hx-target="#para-{{ paragraph.id }}"
   hx-swap="outerHTML"
   class="space-y-2"
